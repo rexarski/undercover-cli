@@ -1,0 +1,14 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# macOS folders
+.Spotlight-V100
+.Trashes
+
+# Python/Claude cache files
+__pycache__/
+*.py[cod]
+*$py.class

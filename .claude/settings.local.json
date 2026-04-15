@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "mcp__plugin_episodic-memory_episodic-memory__search"
+    ]
+  }
+}
