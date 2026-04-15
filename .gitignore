@@ -12,3 +12,6 @@ Icon?
 __pycache__/
 *.py[cod]
 *$py.class
+
+# claude code
+.claude/
