@@ -384,13 +384,18 @@ def restore_assignments(raw: list[dict]) -> list[dict[str, tuple[str, str]]]:
 def compute_scores(
     assignments: dict[str, tuple[str, str]],
     winner: str,
+    alive: list[str],
 ) -> dict[str, int]:
-    """Return per-player score delta for a single game."""
+    """Return per-player score delta for a single game.
+
+    Only surviving players on the winning side score points.
+    Exception: Mr. White scores on their own win (guessed correctly upon elimination).
+    """
     deltas: dict[str, int] = {}
     for name, (role, _) in assignments.items():
-        if winner == "civilian" and role == "Civilian":
+        if winner == "civilian" and role == "Civilian" and name in alive:
             deltas[name] = 2
-        elif winner == "infiltrator" and role in ("Undercover", "Mr. White"):
+        elif winner == "infiltrator" and role in ("Undercover", "Mr. White") and name in alive:
             deltas[name] = 10 if role == "Undercover" else 6
         elif winner == "mrwhite" and role == "Mr. White":
             deltas[name] = 6
@@ -402,10 +407,9 @@ def compute_scores(
 def run_game_loop(
     players: list[str],
     assignments: dict[str, tuple[str, str]],
-    secret_word: str,
     game_num: int,
-) -> str:
-    """Interactive loop for a single game. Returns winner: 'civilian', 'infiltrator', or 'mrwhite'."""
+) -> tuple[str, list[str]]:
+    """Interactive loop for a single game. Returns (winner, alive_players)."""
     alive = players[:]
     random.shuffle(alive)
     round_num = 0
@@ -445,6 +449,16 @@ def run_game_loop(
 
         # ── Elimination ──
         phase_header("vote")
+
+        # Remind players of remaining role counts
+        civilians_alive = sum(1 for p in alive if assignments[p][0] == "Civilian")
+        undercover_alive = sum(1 for p in alive if assignments[p][0] == "Undercover")
+        mrwhite_alive = sum(1 for p in alive if assignments[p][0] == "Mr. White")
+        print(f"  Remaining roles: {GREEN}{civilians_alive} Civilian(s){RESET}, "
+              f"{RED}{undercover_alive} Undercover(s){RESET}, "
+              f"{MAGENTA}{mrwhite_alive} Mr. White(s){RESET}")
+        print()
+
         votes: dict[str, int] = {p: 0 for p in alive}
         for voter in alive:
             timer = start_vote_timer(voter)
@@ -493,6 +507,8 @@ def run_game_loop(
                     timer.cancel()
                 max_tie = max(tie_votes.values())
                 final_candidates = [p for p, v in tie_votes.items() if v == max_tie]
+                if len(final_candidates) > 1:
+                    print(f"  {YELLOW}Still tied! Random elimination among: {', '.join(final_candidates)}{RESET}")
                 eliminated = random.choice(final_candidates)
         else:
             eliminated = eliminated_candidates[0]
@@ -502,14 +518,17 @@ def run_game_loop(
 
         # Mr. White last chance
         if role == "Mr. White":
-            guess = input(
-                f"  🎩 {eliminated}, guess the Civilian word: "
-            ).strip()
-            if guess.lower() == secret_word.lower():
+            print(f"  🎩 {eliminated}, you may now guess the Civilian word out loud!")
+            while True:
+                confirm = input(f"  Moderator: Did Mr. White guess correctly? (y/n): ").strip().lower()
+                if confirm in ("y", "n"):
+                    break
+                print("  Please enter 'y' or 'n'.")
+            if confirm == "y":
                 print(WINNER_ART["mrwhite"])
-                return "mrwhite"
+                return "mrwhite", alive
             else:
-                print(f"  {RED}Wrong!{RESET} The word was '{CYAN}{secret_word}{RESET}'.")
+                print(f"  {RED}Wrong guess!{RESET} The game continues.")
 
         alive.remove(eliminated)
 
@@ -522,11 +541,11 @@ def run_game_loop(
 
         if infiltrators_left == 0:
             print(WINNER_ART["civilian"])
-            return "civilian"
+            return "civilian", alive
 
         if civilians_left <= 1:
             print(WINNER_ART["infiltrator"])
-            return "infiltrator"
+            return "infiltrator", alive
 
 
 # ─── Final Scores ──────────────────────────────────────────────────────────
@@ -632,19 +651,17 @@ def main() -> None:
     # ── Play games (wrapped for graceful Ctrl+C handling) ──
     try:
         for game_idx in range(start_game, num_games):
-            secret, _ = selected_pairs[game_idx]
-
             save_checkpoint(
                 build_checkpoint(
                     players, num_games, selected_pairs, all_assignments, scores, game_idx
                 )
             )
 
-            winner = run_game_loop(
-                players, all_assignments[game_idx], secret, game_idx + 1
+            winner, alive_at_end = run_game_loop(
+                players, all_assignments[game_idx], game_idx + 1
             )
 
-            deltas = compute_scores(all_assignments[game_idx], winner)
+            deltas = compute_scores(all_assignments[game_idx], winner, alive_at_end)
             for name, pts in deltas.items():
                 scores[name] += pts
 
