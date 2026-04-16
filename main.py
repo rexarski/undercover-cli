@@ -11,6 +11,15 @@ import sys
 import tempfile
 import threading
 
+# ─── Windows UTF-8 setup ──────────────────────────────────────────────────
+# Ensure emojis and box-drawing characters render on Windows terminals.
+if sys.platform == "win32":
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, OSError):
+            pass
+
 # ─── ANSI Colors ──────────────────────────────────────────────────────────
 
 RESET = "\033[0m"
@@ -130,7 +139,7 @@ def phase_header(phase: str):
 
 def load_word_pairs(path: str) -> list[tuple[str, str]]:
     pairs = []
-    with open(path, newline="") as f:
+    with open(path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             pairs.append((row["secret"].strip(), row["variation"].strip()))
@@ -275,7 +284,7 @@ def write_player_files(
     ensure_data_dir()
     for name in players:
         path = os.path.join(DATA_DIR, f"{name}.txt")
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(f"┌{'─'*40}┐\n")
             f.write(f"│{'Secret words for ' + name:^40s}│\n")
             f.write(f"└{'─'*40}┘\n\n")
@@ -294,7 +303,7 @@ def write_moderator_file(
 ) -> None:
     ensure_data_dir()
     path = os.path.join(DATA_DIR, "moderator.txt")
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(f"╔{'═'*50}╗\n")
         f.write(f"║{'MODERATOR CHEAT SHEET':^50s}║\n")
         f.write(f"║{'Keep this file hidden from players!':^50s}║\n")
@@ -321,7 +330,7 @@ def save_checkpoint(state: dict) -> None:
     ensure_data_dir()
     fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix=".tmp")
     try:
-        with os.fdopen(fd, "w") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(state, f, indent=2)
         os.replace(tmp_path, CHECKPOINT_FILE)
     except BaseException:
@@ -337,7 +346,7 @@ def load_checkpoint() -> dict | None:
     if not os.path.isfile(CHECKPOINT_FILE):
         return None
     try:
-        with open(CHECKPOINT_FILE) as f:
+        with open(CHECKPOINT_FILE, encoding="utf-8") as f:
             data = json.load(f)
         # Basic validation: must have expected keys
         required = {"players", "num_games", "selected_pairs", "all_assignments", "scores", "completed_games"}
@@ -556,8 +565,15 @@ def print_final_scores(scores: dict[str, int]):
     print(f"  {BOLD}{YELLOW}🏁  FINAL SCORES{RESET}")
     hr("═")
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+    rank = 0
+    prev_pts = None
     for i, (name, pts) in enumerate(ranked, 1):
-        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, "  ")
+        # Tied players share the same rank (standard competition ranking).
+        if pts != prev_pts:
+            rank = i
+            prev_pts = pts
+        medal = medals.get(rank, "  ")
         print(f"  {medal} {name:20s} {pts} pts")
     print()
     print_leaderboard(scores)
