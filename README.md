@@ -1,6 +1,6 @@
 # Undercover
 
-The party game **Undercover** (a.k.a. "Who Is the Spy?") in two flavours: a browser game (`index.html`, recommended) and the original CLI (`main.py`).
+The party game **Undercover** (a.k.a. "Who Is the Spy?") in two flavours: a browser game for remote play (`index.html`, recommended) and the original CLI (`main.py`).
 
 ## Browser game (recommended)
 
@@ -98,3 +98,10 @@ After each game, a leaderboard with a vertical bar chart is displayed. At the en
 ## Word Pairs
 
 Word pairs live in `words.csv` with columns `round`, `secret` (civilian word), `variation` (undercover word) and `aliases` (optional, `|`-separated alternative spellings of the civilian word accepted as a correct Mr. White guess in the browser game). Add or edit rows to customize the word pool, then run `python build_words.py` for the browser game. The CLI reads the CSV directly and caps the game count at the number of pairs.
+
+## Recent Changes
+
+- Added a browser version of the game for remote play.
+- Refreshed word pairs with 2026 tech, world news, World Cup and new-dad themes.
+- Fixed tie-breaking scoring and UTF-8 encoding on Windows.
+- Improved game loop outcomes, voting UX, and endgame scoring.
