@@ -1,8 +1,33 @@
-# Undercover CLI
+# Undercover
 
-A command-line version of the party game **Undercover** (a.k.a. "Who Is the Spy?").
+The party game **Undercover** (a.k.a. "Who Is the Spy?") in two flavours: a browser game (`index.html`, recommended) and the original CLI (`main.py`).
 
-## Setup
+## Browser game (recommended)
+
+No install, no server, no dependencies. Just open `index.html` in any modern browser (Edge/Chrome on a work laptop is fine). Keep `words.js` next to it.
+
+How a session runs (designed for a remote team on a Teams call, with the moderator sharing their screen):
+
+1. **Add players** (minimum 4), tweak the timers and the number of games per word list, hit **Start playing**.
+2. **Send the word lists.** The game pre-assigns words and roles for the next batch of games (default 8). Each player gets one message covering all of them: press **Copy** and paste it into a private Teams chat, or **Download .txt** to attach. A `moderator.txt` answer key can be downloaded too. Lists stay hidden on screen so screen sharing is safe.
+3. **Rounds**: Description, Discussion, Vote. Votes are cast one ballot at a time by clicking a name (with undo). Ties trigger a tie-break among the non-tied players, then a random pick if still tied.
+4. **Mr. White's guess** is typed in and checked automatically. Matching is forgiving: case, spaces, punctuation and accents are ignored, and per-word aliases from `words.csv` count (e.g. `penalty` for `penalty shootout`). A moderator override button accepts a near miss.
+5. **Next game** moves straight on, since everyone already has their words. When the batch is used up, new lists are dealt. Late joiners can be added and absent players unticked between games, which re-deals the remaining games and asks you to resend the lists.
+6. **End session** at any time for the final standings.
+
+Other bits: the scoreboard on the side updates live after every game, **Pause** freezes the timers (spacebar also works), and progress is auto-saved in the browser so a reload offers to resume.
+
+### Editing the words
+
+Edit `words.csv`, then regenerate `words.js`:
+
+```bash
+python build_words.py
+```
+
+`words.js` is committed, so this only matters after you change the CSV. As a fallback the setup screen can also load a `words.csv` directly.
+
+## CLI version
 
 Requires Python 3.10+. No external dependencies.
 
@@ -72,4 +97,4 @@ After each game, a leaderboard with a vertical bar chart is displayed. At the en
 
 ## Word Pairs
 
-Word pairs live in `words.csv` (columns: `round`, `secret`, `variation`). Add or edit rows to customize the word pool. If you request more games than available pairs, the count is automatically capped.
+Word pairs live in `words.csv` with columns `round`, `secret` (civilian word), `variation` (undercover word) and `aliases` (optional, `|`-separated alternative spellings of the civilian word accepted as a correct Mr. White guess in the browser game). Add or edit rows to customize the word pool, then run `python build_words.py` for the browser game. The CLI reads the CSV directly and caps the game count at the number of pairs.

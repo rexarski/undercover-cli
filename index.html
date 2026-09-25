@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Undercover</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --panel2: #f1f1ee; --line: #e2e2dd;
+    --text: #1a1a1a; --muted: #6f6f6a; --accent: #1a1a1a; --green: #1f7a4d;
+    --red: #b5342a; --yellow: #8a6a00; --purple: #5a3f9e; --cyan: #1d5f9e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px 14px; background: var(--panel); color: var(--text); min-height: 40px; }
+  button:hover { border-color: var(--text); }
+  button:disabled { opacity: .35; cursor: not-allowed; border-color: var(--line); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: #333; }
+  button.danger { color: var(--red); border-color: var(--red); }
+  button.good { background: var(--green); color: #fff; border-color: var(--green); }
+  button.warn { border-color: var(--text); }
+  button.big { font-size: 1.05rem; padding: 12px 22px; }
+  button.ghost { background: transparent; color: var(--muted); }
+  input[type=text], input[type=number] { font: inherit; padding: 8px 12px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--text); min-height: 40px; }
+  input[type=text]:focus, input[type=number]:focus { outline: none; border-color: var(--text); }
+  code { font-size: .9em; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 24px; background: var(--panel); border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: .95rem; letter-spacing: .25em; text-transform: uppercase; font-weight: 600; }
+  .hdr-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  #hdr-status { color: var(--muted); font-size: .9rem; margin-right: 8px; }
+  .layout { display: grid; grid-template-columns: 1fr 280px; gap: 24px; padding: 24px;
+    max-width: 1140px; margin: 0 auto; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+  main, aside { min-width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 24px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 14px; font-size: 1rem; font-weight: 600; }
+  .card h3 { margin: 20px 0 8px; font-size: .75rem; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .12em; font-weight: 600; }
+  .card p { margin: 0 0 12px; }
+  .card ul { padding-left: 18px; margin: 0 0 16px; }
+  .muted { color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line);
+    font-size: .85rem; margin: 2px; }
+  .chip.c { color: var(--green); } .chip.u { color: var(--red); } .chip.w { color: var(--purple); }
+  .phase { font-size: 1.35rem; font-weight: 600; margin: 0 0 6px; letter-spacing: -.01em; }
+  .timer { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.3rem; }
+  .timer.low { color: var(--red); }
+  .order { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 16px; }
+  .order .p { padding: 4px 10px; border-radius: 4px; border: 1px solid var(--line); font-weight: 500; }
+  .order .arrow { color: var(--muted); }
+  .word { font-size: 2.2rem; font-weight: 600; text-align: center; padding: 24px;
+    border-radius: 8px; border: 1px solid var(--line); margin: 12px 0; word-break: break-word; letter-spacing: -.01em; }
+  .banner { text-align: center; padding: 22px; border-radius: 8px; font-size: 1.3rem;
+    font-weight: 600; margin-bottom: 16px; border: 1px solid var(--line); background: var(--panel); }
+  .banner.civilian { color: var(--green); border-color: var(--green); }
+  .banner.infiltrator { color: var(--red); border-color: var(--red); }
+  .banner.mrwhite { color: var(--purple); border-color: var(--purple); }
+  .banner.final { color: var(--text); border-color: var(--text); }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; }
+  .pts { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .plus { color: var(--green); }
+  .score-row { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; margin: 10px 0; }
+  .score-row .rank { color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+  .score-row .name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .score-row .bar { height: 4px; border-radius: 2px; background: var(--panel2); overflow: hidden; grid-column: 2 / 4; }
+  .score-row .bar > div { height: 100%; background: var(--text); transition: width .5s ease; }
+  .score-row .delta { color: var(--green); font-size: .8rem; margin-left: 6px; }
+  .score-row.out { opacity: .4; }
+  .vote-list { margin: 12px 0 0; }
+  .vote-list .v { display: inline-block; padding: 2px 8px; margin: 2px; border-radius: 4px;
+    border: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+  .tally { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .tally .t { padding: 10px; border-radius: 6px; border: 1px solid var(--line); text-align: center; }
+  .tally .t b { display: block; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+  .tally .t.top { border-color: var(--red); color: var(--red); }
+  #overlay { position: fixed; inset: 0; background: rgba(247,247,245,.94); z-index: 20;
+    display: flex; align-items: center; justify-content: center; padding: 20px; }
+  [hidden] { display: none !important; }
+  #overlay .box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 28px; max-width: 480px; width: 100%; text-align: center; }
+  #overlay .box h2 { margin-top: 0; font-size: 1.1rem; }
+  .player-btn { display: flex; justify-content: space-between; align-items: center; }
+  .small { font-size: .85rem; }
+  .log { max-height: 220px; overflow: auto; font-size: .8rem; color: var(--muted); }
+  .log div { padding: 4px 0; border-bottom: 1px solid var(--line); }
+  label.check { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  pre.list { white-space: pre-wrap; margin: 6px 0 0; color: var(--muted); font: .82rem/1.45 ui-monospace, Menlo, Consolas, monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Undercover</h1>
+  <div class="hdr-right">
+    <span id="hdr-status"></span>
+    <button id="btn-pause" data-act="pause">Pause</button>
+    <button id="btn-end" class="ghost" data-act="endSession">End session</button>
+  </div>
+</header>
+<div class="layout">
+  <main id="main"></main>
+  <aside id="sidebar"></aside>
+</div>
+<div id="overlay" hidden></div>
+
+<script src="words.js"></script>
+<script>
+'use strict';
+// ─── Constants ───────────────────────────────────────────────────────────
+const STORAGE_KEY = 'undercover-html-v1';
+const POINTS = { 'Civilian': 2, 'Undercover': 10, 'Mr. White': 6 };
+const ROLE_CLASS = { 'Civilian': 'c', 'Undercover': 'u', 'Mr. White': 'w' };
+const MIN_PLAYERS = 4;
+
+// ─── State ───────────────────────────────────────────────────────────────
+let S = freshState();
+
+function freshState() {
+  return {
+    screen: 'setup',            // setup | lists | game | final
+    players: [],                // [{name, active}]
+    scores: {},                 // name -> points
+    words: [],                  // copy of word pairs used for this session
+    usedPairs: [],              // indices into words (played games only)
+    gameNum: 0,                 // number of the current / last started game
+    batch: [],                  // pre-assigned games: [{gameNum, pairIdx, assignments}]
+    listsStale: false,          // roster changed -> word lists must be resent
+    game: null,
+    history: [],                // [{gameNum, secret, variation, winner, deltas}]
+    settings: { voteTimer: 10, discussTimer: 60, describeTimer: 0, batchSize: 8 },
+    paused: false,
+    timerLeft: null,
+    lastDeltas: {},
+  };
+}
+
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch (e) {} }
+function loadSaved() { try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+function clearSaved() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function activePlayers() { return S.players.filter((p) => p.active).map((p) => p.name); }
+
+// Relaxed guess matching: case-insensitive, ignores whitespace, punctuation and accents.
+function norm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+function guessMatches(guess, pair) {
+  const g = norm(guess);
+  if (!g) return false;
+  return [pair.secret, ...(pair.aliases || [])].some((a) => norm(a) === g);
+}
+
+function roleCounts(names) {
+  const c = { 'Civilian': 0, 'Undercover': 0, 'Mr. White': 0 };
+  for (const n of names) c[S.game.assignments[n]]++;
+  return c;
+}
+
+function log(msg) { S.game && S.game.log.push(msg); }
+
+// ─── Session / game flow ─────────────────────────────────────────────────
+function startSession() {
+  if (activePlayers().length < MIN_PLAYERS) return alert(`Need at least ${MIN_PLAYERS} players.`);
+  S.words = (window.WORD_PAIRS || []).map((p) => ({ secret: p.secret, variation: p.variation, aliases: p.aliases || [] }));
+  if (!S.words.length) return alert('No word pairs loaded. Run build_words.py or load a CSV.');
+  S.scores = {};
+  for (const n of activePlayers()) S.scores[n] = 0;
+  S.usedPairs = []; S.gameNum = 0; S.history = []; S.lastDeltas = {}; S.batch = [];
+  generateBatch();
+  S.screen = 'lists';
+  render();
+}
+
+function assignRoles(players) {
+  const order = shuffle(players);
+  const roleOf = {};
+  roleOf[order[0]] = 'Mr. White';
+  roleOf[order[1]] = 'Undercover';
+  for (const n of order.slice(2)) roleOf[n] = 'Civilian';
+  // Keep roster order for display so table order never leaks roles.
+  const assignments = {};
+  for (const n of players) assignments[n] = roleOf[n];
+  return assignments;
+}
+
+// Pre-assign the next `batchSize` games for the current roster so every player
+// can receive their whole word list in one Teams message.
+function generateBatch() {
+  const players = activePlayers();
+  if (players.length < MIN_PLAYERS) return false;
+  for (const n of players) if (!(n in S.scores)) S.scores[n] = 0;
+  let unused = S.words.map((_, i) => i).filter((i) => !S.usedPairs.includes(i));
+  if (!unused.length) { S.usedPairs = []; unused = S.words.map((_, i) => i); }
+  unused = shuffle(unused);
+  const count = Math.max(1, Math.min(S.settings.batchSize || 8, unused.length));
+  S.batch = [];
+  for (let i = 0; i < count; i++) {
+    S.batch.push({ gameNum: S.gameNum + 1 + i, pairIdx: unused[i], assignments: assignRoles(players) });
+  }
+  S.listsStale = false;
+  return true;
+}
+
+// Games whose words are still to be played: everything after the current game,
+// plus the current one while it has not started yet (ready phase).
+function currentNotStarted() { return !!(S.game && S.game.phase === 'ready' && S.screen !== 'final'); }
+function pendingBatch() { return S.batch.filter((b) => b.gameNum > S.gameNum || (b.gameNum === S.gameNum && currentNotStarted())); }
+
+function startGame() {
+  const entry = S.batch.find((b) => b.gameNum === S.gameNum + 1);
+  if (!entry || S.listsStale) {
+    if (!generateBatch()) return alert(`Need at least ${MIN_PLAYERS} active players.`);
+    S.screen = 'lists';
+    return render();
+  }
+  const pair = S.words[entry.pairIdx];
+  const players = Object.keys(entry.assignments);
+  S.gameNum = entry.gameNum;
+  S.game = {
+    pairIdx: entry.pairIdx, secret: pair.secret, variation: pair.variation, aliases: pair.aliases,
+    assignments: entry.assignments, alive: shuffle(players), roundNum: 0,
+    phase: 'ready',
+    ballots: [], voterIdx: 0, tie: null, eliminated: null, elimNote: '',
+    whiteGuess: null, whiteResult: null, winner: null, deltas: null, log: [],
+  };
+  S.timerLeft = null;
+  S.screen = 'game';
+  render();
+}
+
+function wordForEntry(entry, name) {
+  const r = entry.assignments[name];
+  const pair = S.words[entry.pairIdx];
+  return r === 'Civilian' ? pair.secret : r === 'Undercover' ? pair.variation : null;
+}
+
+// ─── Word lists (Teams messages + files) ─────────────────────────────────
+function playerListText(name) {
+  const games = pendingBatch();
+  const lines = [`UNDERCOVER — secret words for ${name}`, `Games ${games[0].gameNum}–${games[games.length - 1].gameNum}. Keep this to yourself!`, ''];
+  for (const b of games) {
+    const w = wordForEntry(b, name);
+    lines.push(`Game ${b.gameNum}: ${w ? w : '??? (no word this game — you are Mr. White, bluff!)'}`);
+  }
+  lines.push('', 'Do NOT share this message.');
+  return lines.join('\n');
+}
+
+function moderatorText() {
+  const games = pendingBatch();
+  const lines = ['UNDERCOVER — MODERATOR ANSWER KEY', 'Keep this file hidden from players!', ''];
+  for (const b of games) {
+    const pair = S.words[b.pairIdx];
+    lines.push(`── Game ${b.gameNum} ──`, `Civilian word  : ${pair.secret}`, `Undercover word: ${pair.variation}`, 'Roles:');
+    for (const [n, r] of Object.entries(b.assignments)) lines.push(`    ${n.padEnd(20)} → ${r.padEnd(12)} (word: ${wordForEntry(b, n) || '---'})`);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function copyText(text, btn) {
+  const done = () => { if (btn) { const old = btn.textContent; btn.textContent = '✓ Copied'; setTimeout(() => { btn.textContent = old; }, 1500); } };
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { alert('Copy failed. Use the Show button and copy manually.'); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+}
+
+function downloadText(filename, text) {
+  const blob = new Blob(['﻿' + text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function safeFilename(name) { return name.replace(/[\/\\<>:"|?*\x00]/g, '_'); }
+
+function beginRound() {
+  const g = S.game;
+  g.roundNum++;
+  g.phase = 'describe';
+  g.ballots = []; g.voterIdx = 0; g.tie = null; g.eliminated = null; g.elimNote = '';
+  g.whiteGuess = null; g.whiteResult = null;
+  S.timerLeft = S.settings.describeTimer > 0 ? S.settings.describeTimer : null;
+  log(`Round ${g.roundNum} started. Alive: ${g.alive.join(', ')}`);
+  render();
+}
+
+function startDiscuss() {
+  S.game.phase = 'discuss';
+  S.timerLeft = S.settings.discussTimer > 0 ? S.settings.discussTimer : null;
+  render();
+}
+
+function startVote() {
+  const g = S.game;
+  g.phase = 'vote'; g.ballots = []; g.voterIdx = 0;
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function castVote(target) {
+  const g = S.game;
+  const voter = g.alive[g.voterIdx];
+  if (!voter || target === voter || !g.alive.includes(target)) return;
+  g.ballots.push({ voter, target });
+  g.voterIdx++;
+  if (g.voterIdx >= g.alive.length) return finishVote();
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function undoVote() {
+  const g = S.game;
+  if (!g.ballots.length) return;
+  g.ballots.pop(); g.voterIdx--;
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function tally(ballots, candidates) {
+  const t = {};
+  for (const c of candidates) t[c] = 0;
+  for (const b of ballots) t[b.target]++;
+  const max = Math.max(...Object.values(t));
+  return { t, top: candidates.filter((c) => t[c] === max) };
+}
+
+function finishVote() {
+  const g = S.game;
+  const { t, top } = tally(g.ballots, g.alive);
+  log(`Votes: ${Object.entries(t).map(([n, v]) => `${n} ${v}`).join(', ')}`);
+  if (top.length === 1) return eliminate(top[0], '');
+  const neutral = g.alive.filter((n) => !top.includes(n));
+  if (!neutral.length) {
+    return eliminate(pick(top), `Tie between ${top.join(', ')} with no neutral voters left. Random elimination!`);
+  }
+  g.tie = { candidates: top, voters: neutral, ballots: [], voterIdx: 0 };
+  g.phase = 'tiebreak';
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function castTieVote(target) {
+  const g = S.game, tb = g.tie;
+  const voter = tb.voters[tb.voterIdx];
+  if (!voter || !tb.candidates.includes(target)) return;
+  tb.ballots.push({ voter, target });
+  tb.voterIdx++;
+  if (tb.voterIdx >= tb.voters.length) {
+    const { t, top } = tally(tb.ballots, tb.candidates);
+    log(`Tie-break: ${Object.entries(t).map(([n, v]) => `${n} ${v}`).join(', ')}`);
+    if (top.length === 1) return eliminate(top[0], `Tie-break vote between ${tb.candidates.join(', ')}.`);
+    return eliminate(pick(top), `Still tied between ${top.join(', ')}. Random elimination!`);
+  }
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function undoTieVote() {
+  const tb = S.game.tie;
+  if (!tb.ballots.length) return;
+  tb.ballots.pop(); tb.voterIdx--;
+  S.timerLeft = S.settings.voteTimer > 0 ? S.settings.voteTimer : null;
+  render();
+}
+
+function eliminate(name, note) {
+  const g = S.game;
+  g.eliminated = name; g.elimNote = note; g.phase = 'eliminated';
+  g.whiteGuess = null; g.whiteResult = null;
+  S.timerLeft = null;
+  log(`${name} eliminated (${g.assignments[name]}). ${note}`);
+  render();
+  if (g.assignments[name] === 'Mr. White') setTimeout(() => { const i = $('guess-input'); i && i.focus(); }, 50);
+}
+
+function submitWhiteGuess() {
+  const g = S.game;
+  const input = $('guess-input');
+  const guess = input ? input.value.trim() : '';
+  if (!guess) return;
+  g.whiteGuess = guess;
+  const ok = guessMatches(guess, { secret: g.secret, aliases: g.aliases });
+  g.whiteResult = ok ? 'correct' : 'wrong';
+  log(`Mr. White guessed "${guess}" → ${g.whiteResult}`);
+  if (ok) return endGame('mrwhite');
+  render();
+}
+
+function acceptWhiteGuess() { log('Moderator accepted Mr. White\'s guess.'); endGame('mrwhite'); }
+
+function applyElimination() {
+  const g = S.game;
+  g.alive = g.alive.filter((n) => n !== g.eliminated);
+  const c = roleCounts(g.alive);
+  const infiltrators = c['Undercover'] + c['Mr. White'];
+  if (infiltrators === 0) return endGame('civilian');
+  if (c['Civilian'] <= 1) return endGame('infiltrator');
+  beginRound();
+}
+
+function computeDeltas(winner, alive) {
+  const d = {};
+  for (const [name, role] of Object.entries(S.game.assignments)) {
+    let pts = 0;
+    if (winner === 'civilian' && role === 'Civilian' && alive.includes(name)) pts = 2;
+    else if (winner === 'infiltrator' && (role === 'Undercover' || role === 'Mr. White') && alive.includes(name)) pts = POINTS[role];
+    else if (winner === 'mrwhite' && role === 'Mr. White') pts = 6;
+    d[name] = pts;
+  }
+  return d;
+}
+
+function endGame(winner) {
+  const g = S.game;
+  g.winner = winner;
+  g.deltas = computeDeltas(winner, g.alive);
+  for (const [n, p] of Object.entries(g.deltas)) S.scores[n] = (S.scores[n] || 0) + p;
+  S.lastDeltas = g.deltas;
+  S.usedPairs.push(g.pairIdx);
+  S.history.push({ gameNum: S.gameNum, secret: g.secret, variation: g.variation, winner, deltas: g.deltas });
+  g.phase = 'result';
+  S.timerLeft = null;
+  log(`Game over: ${winner}`);
+  render();
+}
+
+function endSession() {
+  if (S.screen === 'setup') return;
+  const inGame = S.screen === 'game' && S.game && S.game.phase !== 'result';
+  const msg = inGame ? 'End the session now? The current game will be abandoned (no points).' : 'End the session and show final standings?';
+  if (!confirm(msg)) return;
+  S.screen = 'final'; S.paused = false; S.timerLeft = null;
+  render();
+}
+
+function newSession() {
+  const players = S.players;
+  const settings = S.settings;
+  S = freshState();
+  S.players = players; S.settings = settings;
+  clearSaved();
+  render();
+}
+
+// ─── Players ─────────────────────────────────────────────────────────────
+function addPlayer(name) {
+  name = name.trim();
+  if (!name) return 'Name cannot be empty.';
+  if (S.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) return 'Name already taken.';
+  S.players.push({ name, active: true });
+  if (S.screen !== 'setup') { S.scores[name] = S.scores[name] || 0; rosterChanged(); }
+  return '';
+}
+function removePlayer(name) {
+  if (S.screen === 'setup') S.players = S.players.filter((p) => p.name !== name);
+  else { const p = S.players.find((x) => x.name === name); if (p) { p.active = false; rosterChanged(); } }
+}
+function togglePlayer(name) { const p = S.players.find((x) => x.name === name); if (p) { p.active = !p.active; rosterChanged(); } }
+// Roster changed between games: the pre-assigned games are void, new lists must be sent.
+function rosterChanged() { if (S.screen !== 'setup') S.listsStale = true; }
+
+// ─── CSV loading (optional override) ─────────────────────────────────────
+function parseCsv(text) {
+  const rows = []; let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; } else field += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(field); rows.push(row); row = []; field = ''; }
+    else field += c;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  if (!rows.length) return [];
+  const header = rows[0].map((h) => h.trim().toLowerCase());
+  const si = header.indexOf('secret'), vi = header.indexOf('variation'), ai = header.indexOf('aliases');
+  if (si < 0 || vi < 0) return [];
+  return rows.slice(1).filter((r) => (r[si] || '').trim() && (r[vi] || '').trim()).map((r) => ({
+    secret: r[si].trim(), variation: r[vi].trim(),
+    aliases: ai >= 0 ? (r[ai] || '').split('|').map((a) => a.trim()).filter(Boolean) : [],
+  }));
+}
+
+function loadCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const pairs = parseCsv(String(reader.result || ''));
+    if (!pairs.length) return alert('Could not read any pairs. Expected columns: secret, variation, aliases.');
+    window.WORD_PAIRS = pairs;
+    render();
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ─── Timer ───────────────────────────────────────────────────────────────
+setInterval(() => {
+  if (S.paused || S.timerLeft === null || S.timerLeft <= 0) return;
+  S.timerLeft--;
+  const el = $('timer');
+  if (el) { el.textContent = fmtTimer(S.timerLeft); el.classList.toggle('low', S.timerLeft <= 5); }
+  if (S.timerLeft === 0) { const el2 = $('timer-msg'); if (el2) el2.textContent = "Time's up!"; }
+}, 1000);
+
+function fmtTimer(s) { return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function timerHtml() {
+  if (S.timerLeft === null) return '';
+  return `<span class="timer ${S.timerLeft <= 5 ? 'low' : ''}" id="timer">${fmtTimer(S.timerLeft)}</span> <span id="timer-msg" class="muted small">${S.timerLeft === 0 ? "Time's up!" : ''}</span>`;
+}
+
+// ─── Rendering ───────────────────────────────────────────────────────────
+function render() {
+  save();
+  const main = $('main');
+  if (S.screen === 'setup') main.innerHTML = renderSetup();
+  else if (S.screen === 'lists') main.innerHTML = renderLists();
+  else if (S.screen === 'game') main.innerHTML = renderGame();
+  else main.innerHTML = renderFinal();
+  $('sidebar').innerHTML = renderSidebar();
+  $('btn-pause').textContent = S.paused ? 'Resume' : 'Pause';
+  $('btn-pause').disabled = S.screen !== 'game';
+  $('btn-end').disabled = S.screen === 'setup' || S.screen === 'final';
+  $('hdr-status').textContent = S.screen === 'game' ? `Game ${S.gameNum} · Round ${S.game.roundNum || '–'}` : S.screen === 'final' ? 'Final standings' : S.screen === 'lists' ? 'Word lists' : '';
+  renderOverlay();
+}
+
+function renderSetup() {
+  const n = (window.WORD_PAIRS || []).length;
+  return `
+  <div class="card">
+    <h2>Players <span class="muted small">(minimum ${MIN_PLAYERS})</span></h2>
+    <form class="row" data-form="addPlayer">
+      <input type="text" id="new-name" placeholder="Player name" autocomplete="off" style="flex:1;min-width:160px">
+      <button type="submit" class="primary">Add</button>
+    </form>
+    <div id="add-err" class="small" style="color:var(--red);min-height:1.2em"></div>
+    <div class="grid" style="margin-top:8px">
+      ${S.players.map((p) => `<button class="player-btn" data-act="removePlayer" data-name="${esc(p.name)}" title="Remove"><span>${esc(p.name)}</span><span class="muted">✕</span></button>`).join('')}
+    </div>
+    ${S.players.length ? '' : '<p class="muted">Add everyone who is playing. Names are case-insensitive.</p>'}
+  </div>
+  <div class="card">
+    <h2>Settings</h2>
+    <div class="row">
+      <label>Vote timer (s) <input type="number" min="0" max="120" data-setting="voteTimer" value="${S.settings.voteTimer}" style="width:80px"></label>
+      <label>Discussion timer (s) <input type="number" min="0" max="600" data-setting="discussTimer" value="${S.settings.discussTimer}" style="width:80px"></label>
+      <label>Description timer (s) <input type="number" min="0" max="600" data-setting="describeTimer" value="${S.settings.describeTimer}" style="width:80px"></label>
+      <label>Games per word list <input type="number" min="1" max="30" data-setting="batchSize" value="${S.settings.batchSize}" style="width:80px"></label>
+    </div>
+    <p class="muted small">0 disables a timer. Timers only remind, they never auto-advance. Words for this many games are assigned up front so each player gets one Teams message.</p>
+    <h3>Words</h3>
+    <p class="small"><b>${n}</b> word pairs loaded from <code>words.js</code>. Optional: <label class="chip" style="cursor:pointer">load a different words.csv <input type="file" accept=".csv,text/csv" id="csv-file" hidden></label></p>
+  </div>
+  <div class="card">
+    <h2>Rules recap</h2>
+    <ul class="small">
+      <li>Each game: 1 Mr. White (no word), 1 Undercover (similar word), everyone else Civilian.</li>
+      <li>Each round: describe your word in turn, discuss, then vote someone out.</li>
+      <li>Civilians win when both infiltrators are out. Infiltrators win when only 1 civilian is left.</li>
+      <li>Mr. White gets one guess at the civilian word when eliminated. Correct guess = instant win.</li>
+      <li>Points: Civilian 2 · Mr. White 6 · Undercover 10. Only survivors on the winning side score.</li>
+    </ul>
+    <button class="primary big" data-act="startSession" ${S.players.length < MIN_PLAYERS ? 'disabled' : ''}>Start playing</button>
+  </div>`;
+}
+
+function renderGame() {
+  const g = S.game;
+  switch (g.phase) {
+    case 'ready': return renderReady();
+    case 'describe': return renderDescribe();
+    case 'discuss': return renderDiscuss();
+    case 'vote': return renderVote();
+    case 'tiebreak': return renderTieBreak();
+    case 'eliminated': return renderEliminated();
+    case 'result': return renderResult();
+  }
+  return '';
+}
+
+function roundHeader(phaseKey, title) {
+  const g = S.game, c = roleCounts(g.alive);
+  return `
+    <div class="row" style="justify-content:space-between">
+      <div class="phase ${phaseKey}">${title}</div>
+      <div>${timerHtml()}</div>
+    </div>
+    <div class="small muted">Game ${S.gameNum} · Round ${g.roundNum} · Still in:
+      <span class="chip c">${c['Civilian']} Civilian</span><span class="chip u">${c['Undercover']} Undercover</span><span class="chip w">${c['Mr. White']} Mr. White</span>
+    </div>`;
+}
+
+let listsRevealed = false;   // whether the word lists are shown in clear on the lists screen
+function renderLists() {
+  const games = pendingBatch();
+  const players = games.length ? Object.keys(games[0].assignments) : [];
+  if (!games.length) return `<div class="card"><p>No games pending.</p><button class="primary" data-act="startGame">Generate words</button></div>`;
+  const range = games.length === 1 ? `game ${games[0].gameNum}` : `games ${games[0].gameNum}–${games[games.length - 1].gameNum}`;
+  return `
+  <div class="card">
+    <div class="phase reveal">Word lists for ${range}</div>
+    <p>Send each player their list as a private Teams message: <b>Copy</b> then paste into their chat, or <b>Download</b> a .txt to attach. Lists are hidden on screen so you can share your screen safely.</p>
+    <div class="row" style="margin-bottom:12px">
+      <button data-act="toggleLists">${listsRevealed ? 'Hide lists' : 'Show lists on screen'}</button>
+      <button class="ghost" data-act="downloadModerator">Download moderator.txt (answer key)</button>
+      <button class="ghost" data-act="downloadAllLists">Download all player files</button>
+      <button class="ghost" data-act="regenerateLists" title="Reshuffle roles and words for the pending games">Reshuffle</button>
+    </div>
+    <table>
+      <tr><th>Player</th><th></th><th></th></tr>
+      ${players.map((n) => `<tr>
+        <td><b>${esc(n)}</b>${listsRevealed ? `<pre class="list">${esc(playerListText(n))}</pre>` : ''}</td>
+        <td><button data-act="copyList" data-name="${esc(n)}">Copy</button></td>
+        <td><button class="ghost" data-act="downloadList" data-name="${esc(n)}">Download .txt</button></td>
+      </tr>`).join('')}
+    </table>
+    <p class="muted small" style="margin-top:12px">Each message covers ${games.length} game${games.length > 1 ? 's' : ''}. Mr. White sees "???" for that game.</p>
+    ${currentNotStarted()
+      ? `<button class="primary big" data-act="backToGame">Back to game ${S.gameNum}</button>`
+      : `<button class="primary big" data-act="startGame">Start game ${games[0].gameNum}</button>`}
+  </div>`;
+}
+
+function renderReady() {
+  const g = S.game;
+  const all = Object.keys(g.assignments);
+  const civ = all.filter((n) => g.assignments[n] === 'Civilian').length;
+  const left = pendingBatch().length;
+  return `
+  <div class="card">
+    <div class="phase reveal">Game ${S.gameNum}</div>
+    <p>Everyone: check your Teams message for your <b>Game ${S.gameNum}</b> word.</p>
+    ${civ === 2 ? '<p style="color:var(--yellow)">Only 2 civilians. One wrong elimination and the infiltrators win!</p>' : ''}
+    <p>Playing: ${all.map((n) => `<span class="chip">${esc(n)}</span>`).join('')}</p>
+    <button class="primary big" data-act="beginRound">Start round 1</button>
+    <button class="ghost" data-act="showLists">Word lists</button>
+    <p class="muted small" style="margin-top:8px">${left} more game${left === 1 ? '' : 's'} already assigned after this one.</p>
+  </div>`;
+}
+
+function orderHtml(list) {
+  return `<div class="order">${list.map((n, i) => `${i ? '<span class="arrow">→</span>' : ''}<span class="p">${esc(n)}</span>`).join('')}</div>`;
+}
+
+function renderDescribe() {
+  const g = S.game;
+  return `<div class="card">
+    ${roundHeader('describe', 'Description')}
+    <h3>Speaking order</h3>
+    ${orderHtml(g.alive)}
+    <p>Each player describes their word with one clue. No repeats, no saying the word itself.</p>
+    <button class="primary big" data-act="startDiscuss">Done → Discussion</button>
+    <button class="ghost" data-act="skipToVote">Skip discussion → Vote</button>
+  </div>`;
+}
+
+function renderDiscuss() {
+  return `<div class="card">
+    ${roundHeader('discuss', 'Discussion')}
+    <p>Who sounds off? Argue it out. Everyone still in: ${S.game.alive.map((n) => `<span class="chip">${esc(n)}</span>`).join('')}</p>
+    <button class="danger big" data-act="startVote">Go to vote</button>
+  </div>`;
+}
+
+function ballotsHtml(ballots) {
+  if (!ballots.length) return '';
+  return `<div class="vote-list">${ballots.map((b) => `<span class="v">${esc(b.voter)} → <b>${esc(b.target)}</b></span>`).join('')}</div>`;
+}
+
+function renderVote() {
+  const g = S.game;
+  const voter = g.alive[g.voterIdx];
+  return `<div class="card">
+    ${roundHeader('vote', 'Elimination vote')}
+    <h3>Ballot ${g.voterIdx + 1} of ${g.alive.length}</h3>
+    <p style="font-size:1.3rem"><b>${esc(voter)}</b>, who do you vote out?</p>
+    <div class="grid">
+      ${g.alive.filter((n) => n !== voter).map((n) => `<button class="big" data-act="castVote" data-name="${esc(n)}">${esc(n)}</button>`).join('')}
+    </div>
+    ${ballotsHtml(g.ballots)}
+    <div class="row" style="margin-top:8px">
+      <button class="ghost" data-act="undoVote" ${g.ballots.length ? '' : 'disabled'}>Undo last vote</button>
+    </div>
+  </div>`;
+}
+
+function renderTieBreak() {
+  const g = S.game, tb = g.tie;
+  const voter = tb.voters[tb.voterIdx];
+  return `<div class="card">
+    ${roundHeader('vote', 'Tie-break')}
+    <p>Tie between ${tb.candidates.map((n) => `<span class="chip u">${esc(n)}</span>`).join('')}. Only the non-tied players vote again.</p>
+    <h3>Tie-break ballot ${tb.voterIdx + 1} of ${tb.voters.length}</h3>
+    <p style="font-size:1.3rem"><b>${esc(voter)}</b>, who goes?</p>
+    <div class="grid">
+      ${tb.candidates.map((n) => `<button class="big" data-act="castTieVote" data-name="${esc(n)}">${esc(n)}</button>`).join('')}
+    </div>
+    ${ballotsHtml(tb.ballots)}
+    <div class="row" style="margin-top:8px">
+      <button class="ghost" data-act="undoTieVote" ${tb.ballots.length ? '' : 'disabled'}>Undo</button>
+    </div>
+  </div>`;
+}
+
+function tallyHtml() {
+  const g = S.game;
+  const { t, top } = tally(g.ballots, g.alive);
+  return `<div class="tally">${Object.entries(t).sort((a, b) => b[1] - a[1]).map(([n, v]) => `<div class="t ${top.includes(n) ? 'top' : ''}"><b>${v}</b>${esc(n)}</div>`).join('')}</div>`;
+}
+
+function renderEliminated() {
+  const g = S.game;
+  const role = g.assignments[g.eliminated];
+  let extra = '';
+  if (role === 'Mr. White') {
+    if (g.whiteResult === 'wrong') {
+      extra = `
+        <p style="color:var(--red);font-size:1.2rem">"${esc(g.whiteGuess)}" is wrong. The game continues.</p>
+        <div class="row">
+          <button class="primary big" data-act="applyElimination">Continue → next round</button>
+          <button class="ghost" data-act="acceptWhiteGuess" title="Moderator override, e.g. an obvious typo">Accept anyway (moderator)</button>
+        </div>`;
+    } else {
+      extra = `
+        <p> <b>${esc(g.eliminated)}</b>, you get one guess at the civilian word. Type it in:</p>
+        <form class="row" data-form="whiteGuess">
+          <input type="text" id="guess-input" placeholder="Your guess…" autocomplete="off" style="flex:1;min-width:200px;font-size:1.2rem">
+          <button type="submit" class="warn big">Guess!</button>
+        </form>
+        <p class="muted small">Spelling is forgiving: case, spaces and punctuation are ignored, and common alternatives count.</p>`;
+    }
+  } else {
+    extra = `<button class="primary big" data-act="applyElimination">Continue</button>`;
+  }
+  return `<div class="card">
+    ${roundHeader('vote', 'Eliminated')}
+    <h3>Votes</h3>
+    ${tallyHtml()}
+    ${g.elimNote ? `<p style="color:var(--yellow)"> ${esc(g.elimNote)}</p>` : ''}
+    <div class="word"><span class="chip ${ROLE_CLASS[role]}" style="font-size:1rem">${role}</span><br>${esc(g.eliminated)}</div>
+    ${extra}
+  </div>`;
+}
+
+function winnerBanner(w) {
+  return { civilian: 'Civilians win. All infiltrators eliminated.', infiltrator: 'Infiltrators win. Only one civilian remains.', mrwhite: 'Mr. White wins. The civilian word was guessed.' }[w];
+}
+
+function renderResult() {
+  const g = S.game;
+  const names = Object.keys(g.assignments);
+  return `
+  <div class="banner ${g.winner}">${winnerBanner(g.winner)}</div>
+  <div class="card">
+    <h2>Game ${S.gameNum} recap</h2>
+    <div class="row" style="justify-content:space-around;text-align:center">
+      <div><div class="muted small">Civilian word</div><div style="font-size:1.6rem;font-weight:800;color:var(--green)">${esc(g.secret)}</div></div>
+      <div><div class="muted small">Undercover word</div><div style="font-size:1.6rem;font-weight:800;color:var(--red)">${esc(g.variation)}</div></div>
+    </div>
+    ${g.whiteGuess ? `<p class="muted small" style="text-align:center">Mr. White guessed "${esc(g.whiteGuess)}"</p>` : ''}
+    <table style="margin-top:12px">
+      <tr><th>Player</th><th>Role</th><th>Status</th><th class="pts">Points</th></tr>
+      ${names.map((n) => `<tr><td>${esc(n)}</td><td><span class="chip ${ROLE_CLASS[g.assignments[n]]}">${g.assignments[n]}</span></td><td class="muted">${g.alive.includes(n) ? 'survived' : 'eliminated'}</td><td class="pts ${g.deltas[n] ? 'plus' : 'muted'}">${g.deltas[n] ? '+' + g.deltas[n] : '0'}</td></tr>`).join('')}
+    </table>
+    ${S.listsStale ? '<p style="color:var(--yellow)">The roster changed, so the remaining games will be re-dealt. New word lists must be sent before the next game.</p>' : ''}
+    <div class="row" style="margin-top:16px">
+      <button class="primary big" data-act="startGame">${pendingBatch().length && !S.listsStale ? `Next game (${pendingBatch().length} left on current lists)` : 'Deal new word lists'}</button>
+      <button class="ghost" data-act="endSession">End session</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Players for the next game</h2>
+    <form class="row" data-form="addPlayer">
+      <input type="text" id="new-name" placeholder="Add a late joiner" autocomplete="off" style="flex:1;min-width:160px">
+      <button type="submit">Add</button>
+    </form>
+    <div id="add-err" class="small" style="color:var(--red);min-height:1.2em"></div>
+    ${S.players.map((p) => `<label class="check"><input type="checkbox" data-toggle="${esc(p.name)}" ${p.active ? 'checked' : ''}> ${esc(p.name)} <span class="muted small">(${S.scores[p.name] || 0} pts)</span></label>`).join('')}
+    <p class="muted small">Untick anyone who is stepping out. Their points stay on the board.</p>
+  </div>`;
+}
+
+function rankedScores() {
+  const rows = Object.entries(S.scores).map(([name, pts]) => ({ name, pts, active: S.players.some((p) => p.name === name && p.active) }));
+  rows.sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name));
+  let rank = 0, prev = null;
+  rows.forEach((r, i) => { if (r.pts !== prev) { rank = i + 1; prev = r.pts; } r.rank = rank; });
+  return rows;
+}
+
+function renderFinal() {
+  const rows = rankedScores();
+  return `
+  <div class="banner final">Final standings</div>
+  <div class="card">
+    <table>
+      <tr><th></th><th>Player</th><th class="pts">Points</th></tr>
+      ${rows.map((r) => `<tr><td class="muted">${r.rank}</td><td><b>${esc(r.name)}</b></td><td class="pts">${r.pts}</td></tr>`).join('')}
+    </table>
+    <h3>Games played: ${S.history.length}</h3>
+    <div class="log">${S.history.map((h) => `<div>Game ${h.gameNum}: ${esc(h.secret)} / ${esc(h.variation)} → ${h.winner}</div>`).join('') || '<div>None</div>'}</div>
+    <div class="row" style="margin-top:16px">
+      <button class="primary big" data-act="newSession">New session (same players)</button>
+    </div>
+  </div>`;
+}
+
+function renderSidebar() {
+  const rows = rankedScores();
+  const max = Math.max(1, ...rows.map((r) => r.pts));
+  let html = `<div class="card"><h2>Scoreboard</h2>`;
+  if (!rows.length) html += `<p class="muted small">Scores appear once the session starts.</p>`;
+  for (const r of rows) {
+    const d = S.lastDeltas[r.name];
+    html += `<div class="score-row ${r.active ? '' : 'out'}">
+      <span class="rank">${r.rank}</span>
+      <span class="name">${esc(r.name)}${d ? `<span class="delta">+${d}</span>` : ''}</span>
+      <span class="pts">${r.pts}</span>
+      <div class="bar"><div style="width:${(r.pts / max) * 100}%"></div></div>
+    </div>`;
+  }
+  html += `</div>`;
+  if (S.screen === 'game') {
+    const g = S.game;
+    html += `<div class="card"><h2>Game log</h2><div class="log">${g.log.slice().reverse().map((l) => `<div>${esc(l)}</div>`).join('') || '<div>—</div>'}</div></div>`;
+  }
+  html += `<div class="card small muted">Points: Civilian 2 · Mr. White 6 · Undercover 10<br>Progress is auto-saved in this browser.</div>`;
+  return html;
+}
+
+// ─── Overlay (pause, reveal, resume) ─────────────────────────────────────
+let resumePending = null;
+function renderOverlay() {
+  const ov = $('overlay');
+  const g = S.game;
+  if (resumePending) {
+    ov.hidden = false;
+    ov.innerHTML = `<div class="box"><h2>Saved session found</h2>
+      <p>Game ${resumePending.gameNum || '?'} with ${(resumePending.players || []).filter((p) => p.active).length} players.</p>
+      <div class="row" style="justify-content:center"><button class="primary big" data-act="resumeYes">Resume</button><button class="ghost" data-act="resumeNo">Start fresh</button></div></div>`;
+    return;
+  }
+  if (S.paused) {
+    ov.hidden = false;
+    ov.innerHTML = `<div class="box"><h2>Paused</h2><p class="muted">Timers are frozen.</p><button class="primary big" data-act="pause">Resume</button></div>`;
+    return;
+  }
+  ov.hidden = true; ov.innerHTML = '';
+}
+
+// ─── Actions ─────────────────────────────────────────────────────────────
+const ACTIONS = {
+  startSession, startGame, beginRound, startDiscuss, startVote, undoVote, undoTieVote,
+  applyElimination, acceptWhiteGuess, endSession, newSession,
+  skipToVote: startVote,
+  pause() { if (S.screen !== 'game') return; S.paused = !S.paused; render(); },
+  removePlayer(d) { removePlayer(d.name); render(); },
+  castVote(d) { castVote(d.name); },
+  castTieVote(d) { castTieVote(d.name); },
+  showLists() { listsRevealed = false; S.screen = 'lists'; render(); },
+  backToGame() { S.screen = 'game'; render(); },
+  toggleLists() { listsRevealed = !listsRevealed; render(); },
+  regenerateLists() { if (confirm('Reshuffle words and roles for the pending games? Previously sent lists become invalid.')) { if (currentNotStarted()) { S.game = null; S.gameNum--; } generateBatch(); render(); } },
+  copyList(d, btn) { copyText(playerListText(d.name), btn); },
+  downloadList(d) { downloadText(`${safeFilename(d.name)}.txt`, playerListText(d.name)); },
+  downloadAllLists() { const games = pendingBatch(); if (!games.length) return; Object.keys(games[0].assignments).forEach((n, i) => setTimeout(() => downloadText(`${safeFilename(n)}.txt`, playerListText(n)), i * 300)); },
+  downloadModerator() { downloadText('moderator.txt', moderatorText()); },
+  resumeYes() { S = Object.assign(freshState(), resumePending); S.paused = false; resumePending = null; render(); },
+  resumeNo() { resumePending = null; clearSaved(); render(); },
+};
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-act]');
+  if (!a || a.disabled) return;
+  const fn = ACTIONS[a.dataset.act];
+  if (fn) fn(a.dataset, a);
+});
+
+document.addEventListener('submit', (e) => {
+  const f = e.target.closest('[data-form]');
+  if (!f) return;
+  e.preventDefault();
+  if (f.dataset.form === 'addPlayer') {
+    const input = $('new-name');
+    const err = addPlayer(input.value);
+    if (err) { $('add-err').textContent = err; input.focus(); return; }
+    render();
+    const again = $('new-name'); if (again) again.focus();
+  } else if (f.dataset.form === 'whiteGuess') {
+    submitWhiteGuess();
+  }
+});
+
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset && t.dataset.setting) {
+    const v = Math.max(0, parseInt(t.value, 10) || 0);
+    S.settings[t.dataset.setting] = v; save();
+  } else if (t.dataset && t.dataset.toggle) {
+    togglePlayer(t.dataset.toggle); render();
+  } else if (t.id === 'csv-file' && t.files && t.files[0]) {
+    loadCsvFile(t.files[0]);
+  }
+});
+
+// Keyboard: space toggles pause during a game (when not typing).
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' && S.screen === 'game' && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
+    e.preventDefault(); ACTIONS.pause();
+  }
+});
+
+// ─── Boot ────────────────────────────────────────────────────────────────
+(function boot() {
+  const saved = loadSaved();
+  if (saved && saved.screen && saved.screen !== 'setup') {
+    resumePending = saved;
+  } else if (saved && saved.players) {
+    S.players = saved.players; S.settings = Object.assign(S.settings, saved.settings || {});
+  }
+  render();
+})();
+</script>
+</body>
+</html>
