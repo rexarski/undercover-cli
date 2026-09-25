@@ -1,31 +1,83 @@
-round,secret,variation
-1,cat,dog
-2,coffee,tea
-3,guitar,ukulele
-4,ocean,lake
-5,pizza,pasta
-6,sun,moon
-7,bicycle,motorcycle
-8,apple,orange
-9,snow,rain
-10,book,magazine
-11,pen,pencil
-12,sofa,chair
-13,butter,margarine
-14,whale,dolphin
-15,soccer,football
-16,piano,keyboard
-17,sweater,hoodie
-18,pancake,waffle
-19,ice cream,frozen yogurt
-20,pillow,cushion
-21,hiking,jogging
-22,sushi,sashimi
-23,candle,lamp
-24,sandwich,burger
-25,train,subway
-26,glasses,sunglasses
-27,backpack,suitcase
-28,movie,TV show
-29,river,stream
-30,cookie,biscuit
+round,secret,variation,aliases
+1,ChatGPT,Claude,chat gpt|gpt|openai
+2,Gemini,Siri,google gemini
+3,AI agent,chatbot,agent|agents|ai agents
+4,deepfake,Instagram filter,deep fake|deepfakes
+5,passkey,password,passkeys|pass key
+6,Nvidia,AMD,
+7,data center,power plant,datacenter|data centre|data centers
+8,humanoid robot,Roomba,humanoid|robot|optimus
+9,Tesla,BYD,
+10,Starlink,5G,star link
+11,iPhone,Pixel,apple iphone|iphone 17
+12,foldable phone,flip phone,foldable|fold|galaxy fold|foldable phones
+13,smart glasses,Vision Pro,smartglasses|meta glasses|ray ban meta|ai glasses
+14,Switch 2,Steam Deck,nintendo switch 2|switch|nintendo switch
+15,GTA 6,Zelda Ocarina of Time,gta vi|gta|grand theft auto 6|grand theft auto vi|grand theft auto
+16,Threads,Bluesky,meta threads
+17,TikTok,Reels,tik tok|douyin
+18,Teams,Zoom,microsoft teams|ms teams
+19,Wordle,crossword,wordle game
+20,Spotify,Apple Music,
+21,Netflix,YouTube,
+22,AirPods,headphones,air pods|airpod|airpods pro
+23,Face ID,fingerprint,faceid|face unlock|face recognition
+24,e-bike,scooter,ebike|electric bike|electric bicycle
+25,Duolingo,Rosetta Stone,duo lingo|duo
+26,Labubu,Jellycat,labubus|pop mart labubu
+27,Stanley cup,Owala,stanley|stanley tumbler|stanley bottle
+28,Dubai chocolate,Kinder Bueno,dubai chocolate bar|pistachio chocolate|kunafa chocolate
+29,matcha,coffee,matcha latte|green tea powder
+30,Ozempic,Wegovy,semaglutide
+31,World Cup,Olympics,worldcup|fifa world cup|world cup 2026
+32,Messi,Ronaldo,lionel messi|leo messi
+33,Mbappe,Haaland,kylian mbappe|mbappé
+34,penalty shootout,extra time,penalty|penalties|pens|shootout|penalty kicks|pk
+35,VAR,referee,video assistant referee|video referee
+36,yellow card,red card,yellow|booking|caution
+37,offside,handball,offsides|off side
+38,goalkeeper,striker,keeper|goalie|gk
+39,hat-trick,own goal,hat trick|hattrick|three goals
+40,group stage,knockout,groups|group phase
+41,Golden Boot,Golden Ball,golden shoe|top scorer
+42,Mexico,Canada,mexican
+43,jersey,scarf,shirt|kit|football shirt
+44,stadium,fan zone,arena|ground
+45,curling,ice hockey,curling stone
+46,pickleball,tennis,pickle ball
+47,Super Bowl,Champions League,superbowl|super bowl lx|nfl final
+48,tariff,sanction,tariffs|trade tariff
+49,inflation,interest rate,cpi|price increase
+50,Bitcoin,gold,btc|crypto
+51,Pope,King,the pope|pope leo|pope leo xiv
+52,kiss cam,jumbotron,kisscam|kiss camera
+53,Taylor Swift,Beyonce,taylor|swift|tswift
+54,engagement,wedding,engaged|proposal|getting engaged
+55,KPop Demon Hunters,BTS,k-pop demon hunters|kpop demon hunter|demon hunters|kdh|huntrix|golden
+56,Squid Game,Hunger Games,squidgame|squid games
+57,Superman,Batman,super man|man of steel
+58,F1,MotoGP,formula 1|formula one|f1 racing
+59,Moon,Mars,the moon|lunar|artemis
+60,heatwave,hurricane,heat wave|heat
+61,wildfire,flood,wild fire|wildfires|forest fire|bushfire
+62,northern lights,sunset,aurora|aurora borealis
+63,Ryanair,easyJet,ryan air
+64,diaper,pull-up,diapers|nappy|nappies
+65,pacifier,bottle,dummy|binky|soother|paci
+66,stroller,car seat,pram|buggy|pushchair
+67,crib,bassinet,cot|baby bed
+68,baby monitor,doorbell cam,babymonitor|monitor|baby cam
+69,swaddle,blanket,swaddling|swaddle blanket
+70,onesie,pajamas,onesies|bodysuit|romper
+71,lullaby,white noise,lullabies|bedtime song
+72,burp,hiccup,burping|burps
+73,teething,tantrum,teeth|teething baby
+74,tummy time,screen time,tummytime|belly time
+75,paternity leave,vacation,parental leave|dad leave|paternity
+76,baby shower,birthday party,babyshower|shower
+77,dad joke,pun,dad jokes|dadjoke
+78,minivan,SUV,mini van|van|people carrier
+79,sleep training,gym training,sleep train|sleeptraining|cry it out
+80,Bluey,Peppa Pig,bluey heeler
+81,Baby Shark,Cocomelon,babyshark|baby shark song
+82,diaper bag,laptop bag,diaperbag|nappy bag|baby bag
